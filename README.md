@@ -1,4 +1,3 @@
-# supplementary-material
 # python_scripts
 
 Python scripts accompanying the article **"Title and abstract screening with large language models: A factorial evaluation of prompt design and majority voting"** (Supplementary Information 3 – Python Scripts).
@@ -22,20 +21,19 @@ All scripts operate on the same **290 records** (109 reference-standard INCLUDE 
 |---|---|---|---|
 | 1 | `generate_prompts.py` | — | Reads the text blocks and the DoE matrix from `DoE_TCC.xlsx` and assembles the 16 full prompts in the randomized run order. Output: `experiments_prompts.csv`. |
 | 2 | `run_batch_collection.py` | Pro Preview | Submits one batch of 290 requests per condition, extracts the decision (JSON or free text), and saves one CSV per condition. Resumable. |
-| 3 | `patch_experiment_07_retries.py` | Pro Preview | **One-off script.** Re-sends only the rows of condition 7 that returned a `FORMAT_ERROR` (truncated response) and updates the CSV in place. The prompt is unchanged. |
-| 4 | `calculate_validation_metrics.py` | Pro Preview | Sensitivity, specificity, PPV, NPV, accuracy, and kappa (with 95% CIs) for each of the 16 conditions. Output: `metrics_summary.csv`. |
-| 5 | `run_batch_collection_flashlite_5reps.py` | Flash-Lite | Runs the 16 conditions five times (`rep_1` to `rep_5`), with `max_output_tokens = 8192`. Resumable. |
-| 6 | `calculate_validation_metrics_replicates.py` | Flash-Lite | Metrics per replicate, plus the voting scenarios (best-of-three and best-of-five, sequential and fixed) with the number of API requests each would require. Outputs: `metrics_per_replicate.csv`, `metrics_voting_scenarios.csv`, `scenario_comparison.csv`. |
+| 3 | `calculate_validation_metrics.py` | Pro Preview | Sensitivity, specificity, PPV, NPV, accuracy, and kappa (with 95% CIs) for each of the 16 conditions. Output: `metrics_summary.csv`. |
+| 4 | `run_batch_collection_flashlite_5reps.py` | Flash-Lite | Runs the 16 conditions five times (`rep_1` to `rep_5`), with `max_output_tokens = 8192`. Resumable. |
+| 5 | `calculate_validation_metrics_replicates.py` | Flash-Lite | Metrics per replicate, plus the voting scenarios (best-of-three and best-of-five, sequential and fixed) with the number of API requests each would require. Outputs: `metrics_per_replicate.csv`, `metrics_voting_scenarios.csv`, `scenario_comparison.csv`. |
 
 ### Phase 2 — Complementary prompt evaluation
 
 | Order | Script | Model | What it does |
 |---|---|---|---|
-| 7 | `generate_prompts_complementary.py` | — | Builds the prompts for configurations `00000` (baseline, **(1)**) and `10010` (selected prompt, **(ad)**), reusing the assembly functions of `generate_prompts.py`. Output: `complementary_prompts.csv`. |
-| 8a | `run_complementary_pro.py` | Pro Preview | Runs both configurations once per record, with input validation, output validation, and resumable batch state. |
-| 8b | `run_complementary_flashlite.py` | Flash-Lite | Same as 8a. |
-| 9 | `calculate_validation_metrics_complementary.py` | both | Metrics for the 4 conditions (2 models × 2 prompts). Output: `metrics_summary_complementary.csv`. |
-| 10 | `calculate_validation_metrics_complementary_tests.py` | both | Paired comparison **(ad) vs (1)** within each model: exact McNemar test for sensitivity (among reference-standard INCLUDE records) and specificity (among EXCLUDE records), and paired bootstrap (10,000 resamples) for the kappa difference. Output: `metrics_summary_complementary_tests.csv`. |
+| 6 | `generate_prompts_complementary.py` | — | Builds the prompts for configurations `00000` (baseline, **(1)**) and `10010` (selected prompt, **(ad)**), reusing the assembly functions of `generate_prompts.py`. Output: `complementary_prompts.csv`. |
+| 7a | `run_complementary_pro.py` | Pro Preview | Runs both configurations once per record, with input validation, output validation, and resumable batch state. |
+| 7b | `run_complementary_flashlite.py` | Flash-Lite | Same as 7a. |
+| 8 | `calculate_validation_metrics_complementary.py` | both | Metrics for the 4 conditions (2 models × 2 prompts). Output: `metrics_summary_complementary.csv`. |
+| 9 | `calculate_validation_metrics_complementary_tests.py` | both | Paired comparison **(ad) vs (1)** within each model: exact McNemar test for sensitivity (among reference-standard INCLUDE records) and specificity (among EXCLUDE records), and paired bootstrap (10,000 resamples) for the kappa difference. Output: `metrics_summary_complementary_tests.csv`. |
 
 ## Prompt factors and coding
 
@@ -105,7 +103,6 @@ GEMINI_API_KEY=your_key_here
 ## Methodological notes
 
 - **Labels:** AI decisions use `INCLUDE`/`EXCLUDE`; the human consensus column uses `INCLUIR`/`EXCLUIR` (Portuguese). The metrics scripts normalize both conventions (including accented variants). Unrecognized values are discarded and counted in `n_discarded`, never treated as disagreements.
-- **Invalid responses:** responses without an identifiable decision (`FORMAT_ERROR_*`) do not count as a vote for either label.
 - **Positive class:** `INCLUDE`.
 - **Confidence intervals:** Wilson score (95%) for sensitivity and specificity; percentile bootstrap (5,000 resamples, seed 42) for kappa.
 - **Voting:** replicates are evaluated in their recorded order until the required majority is reached. Because all five replicates were collected in advance, the number of requests under early stopping is estimated retrospectively. For binary labels, sequential and fixed scenarios with the same number of votes reach the same decision for each record.
